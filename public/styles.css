@@ -1,0 +1,38 @@
+body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    input,
+    textarea {
+      display: block;
+      margin-bottom: 10px;
+      width: 300px;
+      padding: 5px;
+    }
+
+    button {
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .post {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+    }

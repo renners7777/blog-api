@@ -1,62 +1,52 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const { MongoClient } = require("mongodb");
+const path = require("path");
+
+const url = "mongodb://localhost:27017";
+const dbName = "blog";
+
+const app = express();
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 
 // Connect to MongoDB
-mongoose
-  .connect("mongodb://localhost:27017/blog", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
+let db;
+MongoClient.connect(url, { useUnifiedTopology: true })
+  .then((client) => {
     console.log("Connected to MongoDB");
+    db = client.db(dbName);
   })
   .catch((err) => {
     console.error("Failed to connect to MongoDB", err);
     process.exit(1);
   });
 
-// Define a schema for the blog post
-const blogPostSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  content: {
-    type: String,
-    required: true,
-  },
-});
-
-// Create a model for the blog post
-const BlogPost = mongoose.model("BlogPost", blogPostSchema);
-
-const app = express();
-app.use(express.json());
-
 // Create a new blog post
-app.post("/posts", (req, res) => {
+app.post('/posts', (req, res) => {
   const { title, content } = req.body;
 
-  const newPost = new BlogPost({
-    title,
-    content,
-  });
-
-  newPost
-    .save()
+  const collection = db.collection('blogposts');
+  collection.insertOne({ title, content })
     .then(() => {
-      res.status(201).json({ message: "Post created successfully" });
+      res.status(201).json({ message: 'Post created successfully' });
     })
     .catch((err) => {
       res.status(500).json({ error: err.message });
     });
+     res.redirect('/');
 });
 
 // Get all blog posts
-app.get("/posts", (req, res) => {
-  BlogPost.find()
-    .then((posts) => {
-      res.json(posts);
+app.get("/", (req, res) => {
+  const collection = db.collection("blogposts");
+  collection
+    .find()
+    .toArray()
+    .then((post) => {
+      res.render("index", { post });
     })
     .catch((err) => {
       res.status(500).json({ error: err.message });
@@ -64,13 +54,14 @@ app.get("/posts", (req, res) => {
 });
 
 // Get a specific blog post by ID
-app.get("/posts/:id", (req, res) => {
+app.get('/posts/:id', (req, res) => {
   const postId = req.params.id;
 
-  BlogPost.findById(postId)
+  const collection = db.collection('blogposts');
+  collection.findOne({ _id: postId })
     .then((post) => {
       if (!post) {
-        return res.status(404).json({ message: "Post not found" });
+        return res.status(404).json({ message: 'Post not found' });
       }
       res.json(post);
     })
@@ -80,16 +71,17 @@ app.get("/posts/:id", (req, res) => {
 });
 
 // Update a blog post
-app.put("/posts/:id", (req, res) => {
+app.put('/posts/:id', (req, res) => {
   const postId = req.params.id;
   const { title, content } = req.body;
 
-  BlogPost.findByIdAndUpdate(postId, { title, content })
-    .then((post) => {
-      if (!post) {
-        return res.status(404).json({ message: "Post not found" });
+  const collection = db.collection('blogposts');
+  collection.updateOne({ _id: postId }, { $set: { title, content } })
+    .then((result) => {
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ message: 'Post not found' });
       }
-      res.json({ message: "Post updated successfully" });
+      res.json({ message: 'Post updated successfully' });
     })
     .catch((err) => {
       res.status(500).json({ error: err.message });
@@ -97,22 +89,23 @@ app.put("/posts/:id", (req, res) => {
 });
 
 // Delete a blog post
-app.delete("/posts/:id", (req, res) => {
+app.delete('/posts/:id', (req, res) => {
   const postId = req.params.id;
 
-  BlogPost.findByIdAndDelete(postId)
-    .then((post) => {
-      if (!post) {
-        return res.status(404).json({ message: "Post not found" });
+  const collection = db.collection('blogposts');
+  collection.deleteOne({ _id: postId })
+    .then((result) => {
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ message: 'Post not found' });
       }
-      res.json({ message: "Post deleted successfully" });
+      res.json({ message: 'Post deleted successfully' });
     })
     .catch((err) => {
       res.status(500).json({ error: err.message });
     });
 });
 
-const port = 3000
+const port = 3000;
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });

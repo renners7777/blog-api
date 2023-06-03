@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta charset="UTF-8">
+                <title>Blog App</title>
+                <link rel="stylesheet" type="text/css" href="/styles.css"></head>
+                <body>
+                    <h1>Blog App</h1>
+
+                    <form id="postForm">
+                        <input type="text" id="titleInput" placeholder="Title">
+                            <textarea id="contentInput" placeholder="Content"></textarea>
+                            <button type="submit">Create Post</button>
+                        </form>
+
+                        <div id="postsContainer">
+                            <% post.forEach((posts) => { %>
+                                <div class="post">
+                                    <h2><%= posts.title %></h2>
+                                    <p><%= posts.content %></p>
+                                    <button onclick="editPost('<%= posts._id %>', '<%= posts.title %>', '<%= posts.content %>')">Edit</button>
+                                    <button onclick="deletePost('<%= posts._id %>')">Delete</button>
+                                </div>
+                            <% }) %>
+                        </div>
+
+                        <script src="/index.js"></script>
+                    </body>
+                </html>
+
+
+
