@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const apiUrl = "http://localhost:3000/posts";
+  const apiUrl = "http://localhost:8080/posts";
 
   const postForm = document.getElementById("postForm");
   const titleInput = document.getElementById("titleInput");
